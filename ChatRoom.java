@@ -1,10 +1,24 @@
 import java.awt.event.*;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import javax.swing.*;   //used to make a GUI with java 
+
+// import jdk.internal.platform.Container;
  
+//DatagramSocket  special socket used for connection less communication i.e usinf UDP
+//datagramPacket (data , datalength , host ip , port num)  need to explicitly mention where the packet is req to go
+//InetAddress.getLocalHost() since both are on same device hence local host ip used
+//socket.send(packet)  means we are sending the datagram packet to the socket 
+//socket.recv(packet) recieves the data into the packet
+//packet.getdata extracts data from the packet
+//for server datagram socket will take an arg of port num
+
+
+
 
 public class ChatRoom extends JFrame{    //Jframe = popup window
     public static final int HOST_MODE=0;
@@ -13,6 +27,7 @@ public class ChatRoom extends JFrame{    //Jframe = popup window
     // NEEDED FOR THE GUI //
     JButton btn_send;
     JScrollPane jScrollPane1;
+    // j.setBackground(Color.BLUE);
     JScrollPane jScrollPane;
     JTextArea jTextArea1;
     JTextArea jTextArea2;
@@ -22,19 +37,19 @@ public class ChatRoom extends JFrame{    //Jframe = popup window
     String Name;
     String roomname;
     InetAddress hostip;
-    ChatRoom pt;
+    ChatRoom my_chat_room;
     DatagramSocket socket;
     ArrayList<client> ClientList;
     byte[] b;
    
-public ChatRoom(String myname,int mod,String ip,String room)
+public ChatRoom(String Sender_name,int mod,String ip,String room)
 {
-     try{
-
+     try
+     {
         // Assigning to variables
-        Name = myname;
+        Name = Sender_name;
         mode = mod;
-        hostip = InetAddress.getByName(ip);
+        hostip = InetAddress.getByName(ip);  
         roomname = room;
         this.setTitle("Chat Room Using UDP");
         this.setLayout(null);
@@ -42,17 +57,17 @@ public ChatRoom(String myname,int mod,String ip,String room)
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  //Java default doesnt close on 'x' click
         // this.setVisible(true);
 
-
         lbl_ipNroomName = new JLabel("",SwingConstants.CENTER);
         txt_mymsg = new JTextField();
         btn_send = new JButton("Send");
         jScrollPane1 = new JScrollPane();
         jTextArea1 = new JTextArea("Your messages will appear here" , 8,8);
+        Color myColor1 = new Color(210, 217,212);
+        jTextArea1.setBackground(myColor1);
         // jTextArea2 = new JTextArea("Display clients ", 8,8);
         ClientList=new ArrayList<>();
         
-        pt=this;
-
+        my_chat_room=this;
 
         // ROOM NAME OR IP ADDRESS
         add(lbl_ipNroomName);
@@ -116,7 +131,7 @@ public ChatRoom(String myname,int mod,String ip,String room)
                 txt_mymsg.setEnabled(true);
                 }
             else{  //If nothing sent within amount of time then
-                JOptionPane.showMessageDialog(pt,"No response from the server");System.exit(0);
+                JOptionPane.showMessageDialog(my_chat_room,"No response from the server");System.exit(0);
                 }
             }
 
@@ -133,8 +148,11 @@ public static void main(String args[])
 {
         try 
         {
+        UIManager UI =new UIManager();
+        UI.put("OptionPane.background",Color.LIGHT_GRAY);
+        UI.put("Panel.background",Color.LIGHT_GRAY);
         String host="",room="";
-        String name=JOptionPane.showInputDialog("Enter Your Name");
+        String name=JOptionPane.showInputDialog(null,"Enter Your Name","Hello, whats your name?",JOptionPane.INFORMATION_MESSAGE);
         if(name==null||name.equals(""))
             {
                 JOptionPane.showMessageDialog(null, "Name cannot be blank");
@@ -155,7 +173,19 @@ public static void main(String args[])
         obj.setVisible(true);
         } catch (Exception ex) {JOptionPane.showMessageDialog(null,ex);}
     }
+// private void getComponents(Container c){
 
+//     Component[] m = c.getComponents();
+
+//     for(int i = 0; i < m.length; i++){
+
+//         if(m[i].getClass().getName() == "javax.swing.JPanel")
+//             m[i].setBackground(Color.white);
+
+//         if(c.getClass().isInstance(m[i]))
+//             getComponents((Container)m[i]);
+//     }
+// }
 public void broadcast(String str)
 {
 try {
@@ -174,7 +204,7 @@ public void sendToHost(String str)
 {
 DatagramPacket pack=new DatagramPacket(str.getBytes(),str.length(),hostip,37988);
 try {socket.send(pack);} catch (Exception ex)
-{JOptionPane.showMessageDialog(pt,"Sending to server failed");}
+{JOptionPane.showMessageDialog(my_chat_room,"Sending to server failed");}
 }
 
 Thread Messenger=new Thread()
@@ -219,7 +249,7 @@ while(true)
         jTextArea1.setText(jTextArea1.getText()+"\n"+s);
         }
     }
-}catch (IOException ex) {JOptionPane.showMessageDialog(pt,ex);System.exit(0);}
+}catch (IOException ex) {JOptionPane.showMessageDialog(my_chat_room,ex);System.exit(0);}
 }
 };
 }
