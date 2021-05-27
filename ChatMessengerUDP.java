@@ -20,7 +20,8 @@ import javax.swing.*;   //used to make a GUI with java
 
 
 
-public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
+public class ChatMessengerUDP extends JFrame
+{    //Jframe = popup window
     public static final int HOST_MODE=0;
     public static final int CLIENT_MODE=1;
     
@@ -64,7 +65,9 @@ public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
             jTextArea1 = new JTextArea("Your messages will appear here" , 8,8);
             Color myColor1 = new Color(210, 217,212);
             jTextArea1.setBackground(myColor1);
-            // jTextArea2 = new JTextArea("Display clients ", 8,8);
+            jTextArea2 = new JTextArea("Display clients ", 8,8);
+            
+            jTextArea2.setBackground(Color.lightGray);
             ClientList=new ArrayList<>();
             
             my_chat_room=this;
@@ -76,11 +79,14 @@ public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
             // MESSAGE AREA
             jScrollPane1.setViewportView(jTextArea1);
             add(jScrollPane1);
-            jScrollPane1.setBounds(10,btn_send.getY()+40,lbl_ipNroomName.getWidth(),getHeight()-20-jScrollPane1.getY()-110);
+            jScrollPane1.setBounds(10,btn_send.getY()+40,lbl_ipNroomName.getWidth(),getHeight()-20-lbl_ipNroomName.getY()-110);
+
+            jTextArea2.setBounds(10,jScrollPane1.getY()+jScrollPane1.getHeight(),getWidth()-30,30);
+            add(jTextArea2);
 
             //INPUT FIELD AND SEND BUTTON
             add(txt_mymsg);
-            txt_mymsg.setBounds(10,jScrollPane1.getY()+jScrollPane1.getHeight(),getWidth()-130,30);
+            txt_mymsg.setBounds(10,jTextArea2.getY()+jTextArea2.getHeight(),getWidth()-130,30);
             add(btn_send);
             btn_send.setBounds(txt_mymsg.getWidth()+20,txt_mymsg.getY(),80,30);
             btn_send.setEnabled(false);
@@ -97,9 +103,18 @@ public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
             if(s.equals("")==false)     //Checking if not empty string
                 {
                 if(mode==HOST_MODE)   
-                    broadcast(Name+": "+s);   //If mode is host i.e first connection to the room, call broadcast
+                    {broadcast(Name+": "+s);   //If mode is host i.e first connection to the room, call broadcast
+                    String a;
+                    jTextArea2.setText("Clients Connected: \n");
+                    for(int i=0;i<ClientList.size();i++)
+                    {
+                        a = ClientList.get(i).name;
+                        jTextArea2.append(a + " ");
+                     }
+                }
                 else
-                    sendToHost(Name+": "+s);  // if mode is not client then send message to host to send to all clients
+                    {sendToHost(Name+": "+s); 
+                } // if mode is not client then send message to host to send to all clients
                 txt_mymsg.setText("");      // Empty the text box
                 }
                 }
@@ -136,43 +151,40 @@ public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
                     JOptionPane.showMessageDialog(my_chat_room,"No response from the server");System.exit(0);
                     }
                 }
-
-
             Messenger.start();
             }catch(Exception ex){JOptionPane.showMessageDialog(null,ex);}
     }
 
-// public void Set_GUI_For_Room(){
 
-
-// }
 public static void main(String args[]) 
 {
         try 
         {
-        UIManager UI =new UIManager();
-        UI.put("OptionPane.background",Color.LIGHT_GRAY);
-        UI.put("Panel.background",Color.LIGHT_GRAY);
-        String host="",room="";
-        String name=JOptionPane.showInputDialog(null,"Enter Your Name","Hello, whats your name?",JOptionPane.INFORMATION_MESSAGE);
-        if(name==null||name.equals(""))
-            {
-                JOptionPane.showMessageDialog(null, "Name cannot be blank");
-            return;
-            }
-        int mode=JOptionPane.showConfirmDialog(null,"Welcome to Chat room using UDP\nDo you want to create a new room?","Welcome!!",JOptionPane.YES_NO_OPTION);
-        if(mode==1)
-            {
-            host=JOptionPane.showInputDialog("Enter the host ip address");
-            if(host==null||host.equals(""))
-                {JOptionPane.showMessageDialog(null, "IP of host is mandatory");
+            UIManager UI =new UIManager();
+            UI.put("OptionPane.background",Color.LIGHT_GRAY);
+            UI.put("Panel.background",Color.LIGHT_GRAY);
+
+            String host="",room="";
+
+            String name=JOptionPane.showInputDialog(null,"Enter Your Name","Hello, whats your name?",JOptionPane.INFORMATION_MESSAGE);
+            if(name==null||name.equals(""))
+                {
+                    JOptionPane.showMessageDialog(null, "Name cannot be blank");
                 return;
-            }
-            }
-        else
-            room=JOptionPane.showInputDialog("Welcome, You are now a host.\n Name your chat room");
-            ChatMessengerUDP obj= new ChatMessengerUDP(name,mode,host,room);
-        obj.setVisible(true);
+                }
+            int mode=JOptionPane.showConfirmDialog(null,"Welcome to Chat room using UDP\nDo you want to create a new room?","Welcome!!",JOptionPane.YES_NO_OPTION);
+            if(mode==1)
+                {
+                host=JOptionPane.showInputDialog("Enter the host ip address");
+                if(host==null||host.equals(""))
+                    {JOptionPane.showMessageDialog(null, "IP of host is mandatory");
+                    return;
+                }
+                }
+            else
+                room=JOptionPane.showInputDialog("Welcome, You are now a host.\n Name your chat room");
+                ChatMessengerUDP obj= new ChatMessengerUDP(name,mode,host,room);
+            obj.setVisible(true);   //Jframe and chatmessenger obj made
         } catch (Exception ex) {JOptionPane.showMessageDialog(null,ex);}
     }
 // private void getComponents(Container c){
@@ -200,6 +212,8 @@ public void broadcast(String str)
                 socket.send(pack);
             }
         jTextArea1.setText(jTextArea1.getText()+"\n"+str);
+        // jTextArea1.setText(jTextArea1.getText()+"\n"+str);
+        
     } catch (Exception ex) {JOptionPane.showMessageDialog(my_chat_room,ex);}
 }
 
@@ -233,6 +247,7 @@ Thread Messenger=new Thread()
                         {
                             //Creating a new client 
                             client temp=new client();
+                            temp.name=s.substring(4,s.indexOf("^^!!"));
                             
                             //Getting the host ipp and port //
 
@@ -254,6 +269,7 @@ Thread Messenger=new Thread()
                     else
                         {
                         jTextArea1.setText(jTextArea1.getText()+"\n"+s);
+                        
                         }
                 }
             } catch (IOException ex) {JOptionPane.showMessageDialog(my_chat_room,ex);System.exit(0);}
