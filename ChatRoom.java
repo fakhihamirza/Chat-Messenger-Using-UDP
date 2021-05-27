@@ -1,29 +1,21 @@
-
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.awt.BorderLayout;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
 import java.util.ArrayList;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
+import javax.swing.*;   //used to make a GUI with java 
+ 
 
-
-public class ChatRoom extends JFrame{
+public class ChatRoom extends JFrame{    //Jframe = popup window
     public static final int HOST_MODE=0;
     public static final int CLIENT_MODE=1;
+    
+    // NEEDED FOR THE GUI //
     JButton btn_send;
     JScrollPane jScrollPane1;
+    JScrollPane jScrollPane;
     JTextArea jTextArea1;
+    JTextArea jTextArea2;
     JLabel lbl_ipNroomName;
     JTextField txt_mymsg;
     int mode;
@@ -38,93 +30,127 @@ public class ChatRoom extends JFrame{
 public ChatRoom(String myname,int mod,String ip,String room)
 {
      try{
-        Name=myname;
-        mode=mod;
-        hostip=InetAddress.getByName(ip);
-        roomname=room;
-        setLayout(null);
-        setSize(400,460);
+
+        // Assigning to variables
+        Name = myname;
+        mode = mod;
+        hostip = InetAddress.getByName(ip);
+        roomname = room;
+        this.setTitle("Chat Room Using UDP");
+        this.setLayout(null);
+        this.setSize(600,600);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);  //Java default doesnt close on 'x' click
+        // this.setVisible(true);
+
+
         lbl_ipNroomName = new JLabel("",SwingConstants.CENTER);
         txt_mymsg = new JTextField();
         btn_send = new JButton("Send");
         jScrollPane1 = new JScrollPane();
-        jTextArea1 = new JTextArea(8,15);
+        jTextArea1 = new JTextArea("Your messages will appear here" , 8,8);
+        // jTextArea2 = new JTextArea("Display clients ", 8,8);
         ClientList=new ArrayList<>();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        
+        pt=this;
+
+
+        // ROOM NAME OR IP ADDRESS
         add(lbl_ipNroomName);
         lbl_ipNroomName.setBounds(10,10,getWidth()-30,40);
-        add(txt_mymsg);
-        pt=this;
-        txt_mymsg.setBounds(10,lbl_ipNroomName.getY()+lbl_ipNroomName.getHeight(),getWidth()-130,30);
-        add(btn_send);
-        btn_send.setBounds(txt_mymsg.getWidth()+20,txt_mymsg.getY(),80,30);
+
+        // MESSAGE AREA
         jScrollPane1.setViewportView(jTextArea1);
         add(jScrollPane1);
         jScrollPane1.setBounds(10,btn_send.getY()+40,lbl_ipNroomName.getWidth(),getHeight()-20-jScrollPane1.getY()-110);
+
+        //INPUT FIELD AND SEND BUTTON
+        add(txt_mymsg);
+        txt_mymsg.setBounds(10,jScrollPane1.getY()+jScrollPane1.getHeight(),getWidth()-130,30);
+        add(btn_send);
+        btn_send.setBounds(txt_mymsg.getWidth()+20,txt_mymsg.getY(),80,30);
         btn_send.setEnabled(false);
         jTextArea1.setEditable(false);
         txt_mymsg.setEnabled(false);
-        btn_send.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-        String s=txt_mymsg.getText();
-        if(s.equals("")==false)
+
+
+        // EVENT TRIGGERED ON PRESSING SEND
+        btn_send.addActionListener(new ActionListener() 
+        {
+        public void actionPerformed(ActionEvent e) 
+        {
+        String s = txt_mymsg.getText();    //Getting the text that you inputted
+        if(s.equals("")==false)     //Checking if not empty string
             {
-            if(mode==HOST_MODE)
-                broadcast(Name+": "+s);
+            if(mode==HOST_MODE)   
+                broadcast(Name+": "+s);   //If mode is host i.e first connection to the room, call broadcast
             else
-                sendToHost(Name+": "+s);
-            txt_mymsg.setText("");
+                sendToHost(Name+": "+s);  // if mode is not client then send message to host to send to all clients
+            txt_mymsg.setText("");      // Empty the text box
             }
             }
-        });
+        }
+        );
        
+
         if(mode==HOST_MODE)
             {
-            socket=new DatagramSocket(37988);
-            lbl_ipNroomName.setText("My IP:"+InetAddress.getLocalHost().getHostAddress());
+            socket=new DatagramSocket(37988);   // new datagram socket is created
+            lbl_ipNroomName.setText("My IP:"+InetAddress.getLocalHost().getHostAddress());    //Gets the ip and displays on top @server side
             }
         else
             {
             socket=new DatagramSocket();
-            String reqresp="!!^^"+Name+"^^!!";
-            DatagramPacket pk=new DatagramPacket(reqresp.getBytes(),reqresp.length(),hostip,37988);
-            socket.send(pk);
+            String Message_String="!!^^"+Name+"^^!!"; //Name = name of person sending
+            DatagramPacket pk=new DatagramPacket(Message_String.getBytes(),Message_String.length(),hostip,37988);
+            socket.send(pk);  //send packet socket
             b=new byte[300];
             pk=new DatagramPacket(b,300);
             socket.setSoTimeout(6000);
             socket.receive(pk);
-            reqresp=new String(pk.getData());
-            if(reqresp.contains("!!^^"))
+            Message_String=new String(pk.getData());
+            if(Message_String.contains("!!^^"))
                 {
-                roomname=reqresp.substring(4,reqresp.indexOf("^^!!"));
+                roomname=Message_String.substring(4,Message_String.indexOf("^^!!"));
                 lbl_ipNroomName.setText("ChatRoom: "+roomname);
                 btn_send.setEnabled(true);
                 txt_mymsg.setEnabled(true);
                 }
-            else{
+            else{  //If nothing sent within amount of time then
                 JOptionPane.showMessageDialog(pt,"No response from the server");System.exit(0);
                 }
             }
+
+
         Messenger.start();
         }catch(Exception ex){JOptionPane.showMessageDialog(null,ex);}
 }
 
+// public void Set_GUI_For_Room(){
 
-public static void main(String args[]) {
-        try {
+
+// }
+public static void main(String args[]) 
+{
+        try 
+        {
         String host="",room="";
         String name=JOptionPane.showInputDialog("Enter Your Name");
         if(name==null||name.equals(""))
-            {JOptionPane.showMessageDialog(null, "Name cannot be blank");return;}
-        int mode=JOptionPane.showConfirmDialog(null,"Create a chatroom or connect to existing one?\nYes - Create Chat Room\nNo - Jion a Chat Room","Create or Join?",JOptionPane.YES_NO_OPTION);
+            {
+                JOptionPane.showMessageDialog(null, "Name cannot be blank");
+            return;
+            }
+        int mode=JOptionPane.showConfirmDialog(null,"Welcome to Chat room using UDP\nDo you want to create a new room?","Welcome!!",JOptionPane.YES_NO_OPTION);
         if(mode==1)
             {
             host=JOptionPane.showInputDialog("Enter the host ip address");
             if(host==null||host.equals(""))
-                {JOptionPane.showMessageDialog(null, "IP of host is mandatory");return;}
+                {JOptionPane.showMessageDialog(null, "IP of host is mandatory");
+                return;
+            }
             }
         else
-            room=JOptionPane.showInputDialog("Name your chat room");
+            room=JOptionPane.showInputDialog("Welcome, You are now a host.\n Name your chat room");
         ChatRoom obj= new ChatRoom(name,mode,host,room);
         obj.setVisible(true);
         } catch (Exception ex) {JOptionPane.showMessageDialog(null,ex);}
@@ -160,15 +186,20 @@ while(true)
     {
     b=new byte[300];
     DatagramPacket pkt=new DatagramPacket(b,300);
-    socket.setSoTimeout(0);
+    socket.setSoTimeout(0);   // no timeout means waiting forever
     socket.receive(pkt);
     String s=new String(pkt.getData());
     if(mode==HOST_MODE)
         {
-        if(s.contains("!!^^"))
+        if(s.contains("!!^^"))    // This is sent from above with the host name ans message
             {
+            
+            //Creating a new client 
             client temp=new client();
-            temp.ip=pkt.getAddress().getHostAddress();
+            
+            //Getting the host ipp and port //
+
+            temp.ip=pkt.getAddress().getHostAddress();   
             temp.port=pkt.getPort();
             broadcast(s.substring(4,s.indexOf("^^!!"))+" joined.");
             ClientList.add(temp);
