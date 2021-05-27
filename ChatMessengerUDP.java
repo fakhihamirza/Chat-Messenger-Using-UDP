@@ -1,4 +1,4 @@
-import java.awt.event.*;
+// import java.awt.event.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.*;
@@ -20,7 +20,7 @@ import javax.swing.*;   //used to make a GUI with java
 
 
 
-public class ChatRoom extends JFrame{    //Jframe = popup window
+public class ChatMessengerUDP extends JFrame{    //Jframe = popup window
     public static final int HOST_MODE=0;
     public static final int CLIENT_MODE=1;
     
@@ -37,12 +37,12 @@ public class ChatRoom extends JFrame{    //Jframe = popup window
     String Name;
     String roomname;
     InetAddress hostip;
-    ChatRoom my_chat_room;
+    ChatMessengerUDP my_chat_room;
     DatagramSocket socket;
     ArrayList<client> ClientList;
     byte[] b;
    
-    public ChatRoom(String Sender_name,int mod,String ip,String room)
+    public ChatMessengerUDP(String Sender_name,int mod,String ip,String room)
     {
         try
         {
@@ -200,7 +200,7 @@ public void broadcast(String str)
                 socket.send(pack);
             }
         jTextArea1.setText(jTextArea1.getText()+"\n"+str);
-    } catch (Exception ex) {JOptionPane.showMessageDialog(pt,ex);}
+    } catch (Exception ex) {JOptionPane.showMessageDialog(my_chat_room,ex);}
 }
 
 public void sendToHost(String str)
