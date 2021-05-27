@@ -171,7 +171,7 @@ public static void main(String args[])
             }
         else
             room=JOptionPane.showInputDialog("Welcome, You are now a host.\n Name your chat room");
-        ChatRoom obj= new ChatRoom(name,mode,host,room);
+            ChatMessengerUDP obj= new ChatMessengerUDP(name,mode,host,room);
         obj.setVisible(true);
         } catch (Exception ex) {JOptionPane.showMessageDialog(null,ex);}
     }
