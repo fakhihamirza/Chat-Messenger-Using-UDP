@@ -118,14 +118,14 @@ public class ChatMessengerUDP extends JFrame
 
             if(mode==HOST_MODE)
                 {
-                socket=new DatagramSocket(37988);   // new datagram socket is created
+                socket=new DatagramSocket(80);   // new datagram socket is created
                 lbl_ipNroomName.setText("My IP:"+InetAddress.getLocalHost().getHostAddress());    //Gets the ip and displays on top @server side
                 }
             else
                 {
                 socket=new DatagramSocket();
                 String Message_String="!!^^"+Name+"^^!!"; //Name = name of person sending
-                DatagramPacket client_packet=new DatagramPacket(Message_String.getBytes(),Message_String.length(),hostip,37988);
+                DatagramPacket client_packet=new DatagramPacket(Message_String.getBytes(),Message_String.length(),hostip,65);
                 socket.send(client_packet);  //send packet socket
                 // FOR RECIEVING FROM HOST
                 b=new byte[300];
@@ -206,13 +206,7 @@ public void broadcast(String str)
                 socket.send(pack);
             }
         jTextArea1.setText(jTextArea1.getText()+"\n"+str);
-        String a;
-        jTextArea2.setText("Clients Connected: \n");
-        for(int i=0;i<ClientList.size();i++)
-        {
-            a = ClientList.get(i).name;
-            jTextArea2.append(a + " ");
-        }
+       
         
     } catch (Exception ex) {JOptionPane.showMessageDialog(my_chat_room,ex);}
 }
@@ -241,7 +235,7 @@ public void broadcast(String str)
 
 public void sendToHost(String str)
 {
-    DatagramPacket pack=new DatagramPacket(str.getBytes(),str.length(),hostip,37988);
+    DatagramPacket pack=new DatagramPacket(str.getBytes(),str.length(),hostip,65);
     try 
     {
         socket.send(pack);
@@ -277,6 +271,13 @@ Thread Messenger=new Thread()
                             temp.port=pkt.getPort();
                             broadcast(s.substring(4,s.indexOf("^^!!"))+" joined.");
                             ClientList.add(temp);
+                            String a;
+                            jTextArea2.setText("Clients Connected: \n");
+                            for(int i=0;i<ClientList.size();i++)
+                            {
+                                a = ClientList.get(i).name;
+                                jTextArea2.append(a + " ");
+                            }
                             s="!!^^"+roomname+"^^!!";
                             pkt=new DatagramPacket(s.getBytes(),s.length(),InetAddress.getByName(temp.ip),temp.port);
                             socket.send(pkt);
