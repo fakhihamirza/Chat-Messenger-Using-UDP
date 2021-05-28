@@ -1,5 +1,5 @@
 import java.awt.event.*;
-import java.awt.BorderLayout;
+// import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.*;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class ChatMessengerUDP extends JFrame
 {    //Jframe = popup window
     public static final int HOST_MODE=0;
     public static final int CLIENT_MODE=1;
-    
+    public static ArrayList<client> ClientList;
     // NEEDED FOR THE GUI //
     JButton btn_send;
     JScrollPane jScrollPane1;
@@ -40,7 +40,7 @@ public class ChatMessengerUDP extends JFrame
     InetAddress hostip;
     ChatMessengerUDP my_chat_room;
     DatagramSocket socket;
-    ArrayList<client> ClientList;
+    // ArrayList<client> ClientList;
     byte[] b;
    
     public ChatMessengerUDP(String Sender_name,int mod,String ip,String room)
@@ -65,7 +65,7 @@ public class ChatMessengerUDP extends JFrame
             jTextArea1 = new JTextArea("Your messages will appear here" , 8,8);
             Color myColor1 = new Color(210, 217,212);
             jTextArea1.setBackground(myColor1);
-            jTextArea2 = new JTextArea("Display clients ", 8,8);
+            jTextArea2 = new JTextArea(8,8);
             
             jTextArea2.setBackground(Color.lightGray);
             ClientList=new ArrayList<>();
@@ -104,13 +104,7 @@ public class ChatMessengerUDP extends JFrame
                 {
                 if(mode==HOST_MODE)   
                     {broadcast(Name+": "+s);   //If mode is host i.e first connection to the room, call broadcast
-                    String a;
-                    jTextArea2.setText("Clients Connected: \n");
-                    for(int i=0;i<ClientList.size();i++)
-                    {
-                        a = ClientList.get(i).name;
-                        jTextArea2.append(a + " ");
-                     }
+                    
                 }
                 else
                     {sendToHost(Name+": "+s); 
@@ -212,10 +206,38 @@ public void broadcast(String str)
                 socket.send(pack);
             }
         jTextArea1.setText(jTextArea1.getText()+"\n"+str);
-        // jTextArea1.setText(jTextArea1.getText()+"\n"+str);
+        String a;
+        jTextArea2.setText("Clients Connected: \n");
+        for(int i=0;i<ClientList.size();i++)
+        {
+            a = ClientList.get(i).name;
+            jTextArea2.append(a + " ");
+        }
         
     } catch (Exception ex) {JOptionPane.showMessageDialog(my_chat_room,ex);}
 }
+// public void broadcast_ClientList()
+// {
+//     try 
+//     {
+//         String [] c = {}; int len , byte by;
+//         for(int i=0;i<ClientList.size();i++)
+//         { 
+//             c[i] = ClientList.get(i).name;
+//             len = len + c[i].length();
+//             by = by + c[i].getBytes();
+//         }
+
+//         DatagramPacket pack=new DatagramPacket(ClientList.getBytes(),client.length());
+//         for(int i=0;i<ClientList.size();i++)
+//             {
+//                 pack.setAddress(InetAddress.getByName(ClientList.get(i).ip));
+//                 pack.setPort(ClientList.get(i).port);
+//                 socket.send(pack);
+//             }
+//     } catch (Exception ex) {JOptionPane.showMessageDialog(my_chat_room,ex);}
+// }
+
 
 public void sendToHost(String str)
 {
@@ -269,6 +291,7 @@ Thread Messenger=new Thread()
                     else
                         {
                         jTextArea1.setText(jTextArea1.getText()+"\n"+s);
+                        jTextArea2.setText("\n");
                         
                         }
                 }
